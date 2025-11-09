@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memgotchi v4+ - Feed your meme or it dies of cringe</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+        :root {
+            --bg-gradient-start: #ffd6e0;
+            --bg-gradient-end: #c5e3f6;
+            --container-bg: #fff;
+            --container-border: #ff9eb5;
+            --title-color: #ff6b9d;
+            --title-shadow: #ffe0e9;
+            --text-color: #666;
+        }
+
+        body.dark-mode {
+            --bg-gradient-start: #1b1b1b;
+            --bg-gradient-end: #0a0a0a;
+            --container-bg: #2a2a2a;
+            --container-border: #ff00ff;
+            --title-color: #ff00ff;
+            --title-shadow: #9900ff;
+            --text-color: #ccccff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            transition: background 0.5s ease;
+            position: relative;
+        }
+
+        .container {
+            background: var(--container-bg);
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            border: 8px solid var(--container-border);
+            transition: all 0.5s ease;
+            position: relative;
+            z-index: 10;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 1.8rem;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1) rotate(15deg);
+        }
+
+        .theme-toggle:active {
+            transform: scale(0.95);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--title-color);
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            text-shadow: 3px 3px 0 var(--title-shadow);
+            transition: color 0.5s ease;
+        }
+
+        .meme-name {
+            text-align: center;
+            color: var(--text-color);
+            font-size: 0.8rem;
+            margin-bottom: 15px;
+            transition: color 0.5s ease;
+        }
+
+        .level-info {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: linear-gradient(135deg, #fff5e1 0%, #ffe8f0 100%);
+            border-radius: 15px;
+            border: 3px solid #ffd700;
+        }
+
+        .level-label {
+            font-size: 0.7rem;
+            color: #ff6b9d;
+            margin-bottom: 8px;
+        }
+
+        .xp-bar-container {
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 15px;
+            overflow: hidden;
+            border: 2px solid #ccc;
+        }
+
+        .xp-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffd700 0%, #ffed4e 100%);
+            transition: width 0.5s ease;
+            border-radius: 8px;
+        }
+
+        .xp-text {
+            font-size: 0.5rem;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .meme-display {
+            background: linear-gradient(135deg, #ffe8f0 0%, #e0f4ff 100%);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 25px;
+            text-align: center;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 4px solid #ffc4d6;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .meme-character {
+            font-size: 8rem;
+            margin-bottom: 15px;
+            animation: float 3s ease-in-out infinite;
+            transition: transform 0.3s ease;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .meme-caption {
+            font-size: 0.6rem;
+            color: #999;
+            font-style: italic;
+            margin-top: 10px;
+            min-height: 20px;
+        }
+
+        .status-message {
+            font-size: 0.7rem;
+            color: #666;
+            line-height: 1.6;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 0 10px;
+        }
+
+        .stats-container {
+            margin-bottom: 25px;
+        }
+
+        .stat-bar {
+            margin-bottom: 15px;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: #666;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-value {
+            color: #ff6b9d;
+        }
+
+        .bar-container {
+            background: #e0e0e0;
+            border-radius: 15px;
+            height: 25px;
+            overflow: hidden;
+            border: 3px solid #ccc;
+            position: relative;
+        }
+
+        .bar-fill {
+            height: 100%;
+            transition: width 0.5s ease, background-color 0.3s ease;
+            border-radius: 12px;
+        }
+
+        .mood-bar { background: linear-gradient(90deg, #ffd700 0%, #ff6b9d 100%); }
+        .virality-bar { background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%); }
+        .cringe-bar { background: linear-gradient(90deg, #fa709a 0%, #fee140 100%); }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.6rem;
+            padding: 15px 10px;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 5px 0 rgba(0, 0, 0, 0.2);
+            position: relative;
+            top: 0;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        button:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-feed {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            color: #8b4513;
+        }
+
+        .btn-ignore {
+            background: linear-gradient(135deg, #a8a8a8 0%, #d3d3d3 100%);
+            color: #333;
+        }
+
+        .btn-revive {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: #fff;
+        }
+
+        .token-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: #fff;
+            grid-column: 1 / -1;
+            margin-top: 10px;
+            opacity: 0.8;
+            cursor: not-allowed;
+        }
+
+        .token-btn:hover {
+            opacity: 1;
+            cursor: pointer;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 0.5rem;
+            color: #999;
+            margin-top: 20px;
+        }
+
+        .death-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .death-message {
+            background: #fff;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            border: 5px solid #ff0000;
+        }
+
+        .death-message h2 {
+            color: #ff0000;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
+        .death-emoji {
+            font-size: 5rem;
+            margin: 20px 0;
+        }
+
+        .restart-btn {
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+            color: #fff;
+            font-size: 0.7rem;
+            padding: 15px 30px;
+            margin-top: 20px;
+        }
+
+        .name-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .name-popup-content {
+            background: #fff;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            border: 5px solid #ff9eb5;
+        }
+
+        .name-popup h2 {
+            color: #ff6b9d;
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+
+        .name-input {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.8rem;
+            padding: 15px;
+            border: 3px solid #ff9eb5;
+            border-radius: 10px;
+            width: 100%;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .name-submit {
+            background: linear-gradient(135deg, #ff6b9d 0%, #ffc4d6 100%);
+            color: #fff;
+            font-size: 0.7rem;
+            padding: 15px 30px;
+        }
+
+        .levelup-animation {
+            animation: levelup 1s ease;
+        }
+
+        @keyframes levelup {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.3) rotate(-10deg); }
+            50% { transform: scale(1.3) rotate(10deg); }
+            75% { transform: scale(1.3) rotate(-10deg); }
+        }
+
+        .sparkle {
+            position: absolute;
+            font-size: 2rem;
+            animation: sparkle-anim 1s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes sparkle-anim {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) scale(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--tx), var(--ty)) scale(1);
+            }
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1rem;
+            }
+
+            .meme-character {
+                font-size: 5rem;
+            }
+
+            .status-message {
+                font-size: 0.6rem;
+                min-height: 80px;
+            }
+
+            button {
+                font-size: 0.5rem;
+                padding: 12px 8px;
+            }
+
+            .controls {
+                gap: 8px;
+            }
+        }
+
+        .shake {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        .pulse {
+            animation: pulse 0.5s;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .flying-meme {
+            position: fixed;
+            cursor: pointer;
+            transition: transform 0.2s ease, opacity 0.3s ease;
+            z-index: 100;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            animation: floatMove 3s ease-in-out infinite;
+            max-width: 250px;
+            max-height: 250px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .flying-meme.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        @keyframes floatMove {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(2deg); }
+        }
+
+        .flying-meme:hover {
+            transform: scale(1.1);
+        }
+
+        .flying-meme:active {
+            transform: scale(0.9);
+        }
+
+        .xp-popup {
+            position: fixed;
+            font-size: 1.5rem;
+            color: #ffd700;
+            font-weight: bold;
+            animation: xpFloat 1s ease-out forwards;
+            pointer-events: none;
+            text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5);
+            z-index: 200;
+        }
+
+        @keyframes xpFloat {
+            0% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-100px);
+            }
+        }
+    </style>
+</head>
+<body>
+<button class="theme-toggle" onclick="toggleTheme()" id="themeToggle">🌙</button>
+
+<div class="container">
+    <h1>MEMGOTCHI</h1>
+    <div class="meme-name" id="memeName">🐸 Froggy</div>
+
+    <div class="level-info">
+        <div class="level-label">Level <span id="levelValue">1</span> — <span id="xpValue">0</span> / <span id="xpRequired">100</span> XP</div>
+        <div class="xp-bar-container">
+            <div class="xp-bar-fill" id="xpBar" style="width: 0%"></div>
+        </div>
+    </div>
+
+    <div class="meme-display" id="memeDisplay">
+        <div class="meme-character" id="memeCharacter">🐸</div>
+        <div class="meme-caption" id="memeCaption"></div>
+        <div class="status-message" id="statusMessage">Your Memgotchi is vibing!</div>
+    </div>
+
+    <div class="stats-container">
+        <div class="stat-bar">
+            <div class="stat-label">
+                <span>MOOD</span>
+                <span class="stat-value" id="moodValue">100</span>
+            </div>
+            <div class="bar-container">
+                <div class="bar-fill mood-bar" id="moodBar" style="width: 100%"></div>
+            </div>
+        </div>
+
+        <div class="stat-bar">
+            <div class="stat-label">
+                <span>VIRALITY</span>
+                <span class="stat-value" id="viralityValue">100</span>
+            </div>
+            <div class="bar-container">
+                <div class="bar-fill virality-bar" id="viralityBar" style="width: 100%"></div>
+            </div>
+        </div>
+
+        <div class="stat-bar">
+            <div class="stat-label">
+                <span>CRINGE</span>
+                <span class="stat-value" id="cringeValue">0</span>
+            </div>
+            <div class="bar-container">
+                <div class="bar-fill cringe-bar" id="cringeBar" style="width: 0%"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn-feed" onclick="feed()">FEED</button>
+        <button class="btn-ignore" onclick="ignore()">IGNORE</button>
+        <button class="btn-revive" onclick="revive()">REVIVE</button>
+        <button class="token-btn" disabled onclick="tokenRevive()">REVIVE WITH $GOTCHI</button>
+    </div>
+
+    <footer>MEMGOTCHI<br> CA: XXX</footer>
+</div>
+
+<div class="death-overlay" id="deathOverlay">
+    <div class="death-message">
+        <h2>GAME OVER</h2>
+        <div class="death-emoji">💀</div>
+        <div class="status-message">Your Memgotchi has died of cringe!</div>
+        <button class="restart-btn" onclick="restart()">RESTART</button>
+    </div>
+</div>
+
+<div class="name-popup" id="namePopup">
+    <div class="name-popup-content">
+        <h2>Name your Memgotchi</h2>
+        <input type="text" class="name-input" id="nameInput" placeholder="Enter name..." maxlength="20">
+        <button class="name-submit" onclick="submitName()">START</button>
+    </div>
+</div>
+
+<script>
+    // Game state
+    let gameState = {
+        mood: 100,
+        virality: 100,
+        cringe: 0,
+        isDead: false,
+        level: 1,
+        xp: 0,
+        xpRequired: 100,
+        name: '',
+        darkMode: false
+    };
+
+    // Random meme array (10-15 memes)
+    const randomMemes = [
+        '🐸', '😺', '🐶', '🦄', '🐧', '🦊', '🐼', '🐵',
+        '🤖', '👾', '🎃', '🦖', '🐙', '🦑', '🌵'
+    ];
+
+    // Flying meme images
+    const memeImages = [
+        "img/frog.jpg",
+        "img/frog2.jpg",
+        "img/frog3.jpeg",
+        "img/dog.jpg",
+        "img/dog2.jpg",
+        "img/dog3.webp",
+        "img/cat.webp",
+        "img/cat2.gif",
+        "img/cat3.webp",
+        "img/wojak.jpg",
+        "img/wojak2.jpg",
+        "img/wojak3.webp"
+    ];
+
+    let currentFlyingMeme = null;
+    let memeSpawnTimeout = null;
+
+    // Meme characters based on mood
+    const memeCharacters = {
+        happy: '🐸',
+        neutral: '😐',
+        sad: '😢',
+        dead: '💀'
+    };
+
+    // Meme captions
+    const memeCaptions = [
+        "When you finally get internet clout",
+        "POV: You just went viral",
+        "That face when the algorithm hits",
+        "Nobody: ... | Me:",
+        "It's giving main character energy",
+        "This is fine.",
+        "Suffering from success",
+        "Based.",
+        "Touch grass? Never heard of it",
+        "Me explaining memes to normies"
+    ];
+
+    // Funny status messages
+    const statusMessages = {
+        feed: [
+            "Your Memgotchi posted a banger!",
+            "It's going viral!",
+            "The algorithm loves this!",
+            "1M views in 5 minutes!",
+            "Based and meme-pilled!"
+        ],
+        ignore: [
+            "Your Memgotchi feels neglected...",
+            "The algorithm has forgotten you...",
+            "Engagement is dropping fast!",
+            "Your Memgotchi is getting cringe...",
+            "Nobody is sharing your memes..."
+        ],
+        revive: [
+            "Cringe levels normalized!",
+            "Your Memgotchi touched grass!",
+            "Back from the cringe void!",
+            "Ratio averted!",
+            "No longer chronically online!"
+        ],
+        death: [
+            "Your Memgotchi has died of cringe! 😭",
+            "Ratio'd into oblivion! 💀",
+            "The cringe was too powerful...",
+            "Your Memgotchi got cancelled! 😭"
+        ],
+        idle: [
+            "Your Memgotchi is scrolling...",
+            "Waiting for the next trend...",
+            "Your Memgotchi is vibing!",
+            "Chilling in the timeline...",
+            "Your Memgotchi is lurking..."
+        ],
+        levelup: [
+            "Your Memgotchi evolved into a danker meme!",
+            "Level up! Meme power increased!",
+            "You've unlocked a new level of cringe!",
+            "Ascended to meme lord status!",
+            "Your Memgotchi is getting stronger!"
+        ]
+    };
+
+    // Sound effects using Web Audio API
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playSound(type) {
+        try {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            if (type === 'feed') {
+                oscillator.frequency.value = 800;
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.1);
+            } else if (type === 'ignore') {
+                oscillator.frequency.value = 200;
+                gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.2);
+            } else if (type === 'levelup') {
+                const frequencies = [523.25, 659.25, 783.99, 1046.50];
+                frequencies.forEach((freq, i) => {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+                    osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(0.2, audioContext.currentTime + i * 0.1);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.1 + 0.2);
+                    osc.start(audioContext.currentTime + i * 0.1);
+                    osc.stop(audioContext.currentTime + i * 0.1 + 0.2);
+                });
+            } else if (type === 'theme') {
+                oscillator.frequency.value = 600;
+                gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.15);
+            }
+        } catch (e) {
+            console.log('Audio not supported');
+        }
+    }
+
+    // Initialize
+    checkName();
+    loadGame();
+    updateDisplay();
+    spawnFlyingMeme();
+
+    function feed() {
+        if (gameState.isDead) return;
+
+        gameState.mood = Math.min(100, gameState.mood + 20);
+        gameState.virality = Math.min(100, gameState.virality + 15);
+        gameState.cringe = Math.max(0, gameState.cringe - 5);
+
+        // Add XP
+        const xpGain = Math.floor(Math.random() * 6) + 5; // 5-10 XP
+        gameState.xp += xpGain;
+
+        // Check for level up
+        if (gameState.xp >= gameState.xpRequired) {
+            levelUp();
+        }
+
+        // Show random meme
+        const randomMeme = randomMemes[Math.floor(Math.random() * randomMemes.length)];
+        document.getElementById('memeCharacter').textContent = randomMeme;
+
+        // Show random caption
+        const randomCaption = memeCaptions[Math.floor(Math.random() * memeCaptions.length)];
+        document.getElementById('memeCaption').textContent = randomCaption;
+
+        showMessage(statusMessages.feed);
+        playSound('feed');
+        updateDisplay();
+        animateButton('pulse');
+        saveGame();
+    }
+
+    function ignore() {
+        if (gameState.isDead) return;
+
+        gameState.mood = Math.max(0, gameState.mood - 25);
+        gameState.virality = Math.max(0, gameState.virality - 20);
+        gameState.cringe = Math.min(100, gameState.cringe + 15);
+
+        showMessage(statusMessages.ignore);
+        playSound('ignore');
+        updateDisplay();
+        animateButton('shake');
+        saveGame();
+    }
+
+    function revive() {
+        if (gameState.isDead) return;
+
+        gameState.cringe = 0;
+        gameState.mood = Math.min(100, gameState.mood + 10);
+
+        showMessage(statusMessages.revive);
+        updateDisplay();
+        animateButton('pulse');
+        saveGame();
+    }
+
+    function tokenRevive() {
+        alert("$MEM token coming soon! 🚀\n\nTo the moon! 🌙");
+    }
+
+    function updateDisplay() {
+        // Check for death
+        if ((gameState.mood <= 0 || gameState.virality <= 0) && !gameState.isDead) {
+            die();
+            return;
+        }
+
+        // Update bars
+        document.getElementById('moodBar').style.width = gameState.mood + '%';
+        document.getElementById('viralityBar').style.width = gameState.virality + '%';
+        document.getElementById('cringeBar').style.width = gameState.cringe + '%';
+
+        // Update values
+        document.getElementById('moodValue').textContent = gameState.mood;
+        document.getElementById('viralityValue').textContent = gameState.virality;
+        document.getElementById('cringeValue').textContent = gameState.cringe;
+
+        // Update level and XP
+        document.getElementById('levelValue').textContent = gameState.level;
+        document.getElementById('xpValue').textContent = gameState.xp;
+        document.getElementById('xpRequired').textContent = gameState.xpRequired;
+
+        // Update XP bar percentage based on xpRequired
+        const xpPercentage = (gameState.xp / gameState.xpRequired) * 100;
+        document.getElementById('xpBar').style.width = xpPercentage + '%';
+
+        // Update character based on mood
+        const memeChar = document.getElementById('memeCharacter');
+        if (gameState.mood >= 70) {
+            memeChar.textContent = memeCharacters.happy;
+        } else if (gameState.mood >= 40) {
+            memeChar.textContent = memeCharacters.neutral;
+        } else if (gameState.mood >= 10) {
+            memeChar.textContent = memeCharacters.sad;
+        } else {
+            memeChar.textContent = memeCharacters.dead;
+        }
+    }
+
+    function showMessage(messageArray) {
+        const randomMessage = messageArray[Math.floor(Math.random() * messageArray.length)];
+        document.getElementById('statusMessage').textContent = randomMessage;
+    }
+
+    function animateButton(animClass) {
+        const memeChar = document.getElementById('memeCharacter');
+        memeChar.classList.add(animClass);
+        setTimeout(() => memeChar.classList.remove(animClass), 500);
+    }
+
+    function die() {
+        gameState.isDead = true;
+        document.getElementById('memeCharacter').textContent = memeCharacters.dead;
+        showMessage(statusMessages.death);
+
+        setTimeout(() => {
+            document.getElementById('deathOverlay').style.display = 'flex';
+        }, 1000);
+    }
+
+    function restart() {
+        gameState.mood = 100;
+        gameState.virality = 100;
+        gameState.cringe = 0;
+        gameState.isDead = false;
+        gameState.level = 1;
+        gameState.xp = 0;
+
+        document.getElementById('deathOverlay').style.display = 'none';
+        document.getElementById('memeCaption').textContent = '';
+        showMessage(statusMessages.idle);
+        updateDisplay();
+        saveGame();
+    }
+
+    function levelUp() {
+        gameState.level++;
+        gameState.xp = 0;
+        gameState.xpRequired = 100 + (gameState.level - 1) * 50;
+
+        // Show level up message
+        showMessage(statusMessages.levelup);
+
+        // Play sound
+        playSound('levelup');
+
+        // Animate character
+        const memeChar = document.getElementById('memeCharacter');
+        memeChar.classList.add('levelup-animation');
+        setTimeout(() => memeChar.classList.remove('levelup-animation'), 1000);
+
+        // Create sparkles
+        for (let i = 0; i < 8; i++) {
+            setTimeout(() => createSparkle(), i * 100);
+        }
+
+        updateDisplay();
+        saveGame();
+    }
+
+    function createSparkle() {
+        const sparkle = document.createElement('div');
+        sparkle.className = 'sparkle';
+        sparkle.textContent = '✨';
+
+        const memeDisplay = document.getElementById('memeDisplay');
+        const rect = memeDisplay.getBoundingClientRect();
+
+        sparkle.style.position = 'absolute';
+        sparkle.style.left = (rect.width / 2) + 'px';
+        sparkle.style.top = (rect.height / 2) + 'px';
+
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 50 + Math.random() * 50;
+        sparkle.style.setProperty('--tx', Math.cos(angle) * distance + 'px');
+        sparkle.style.setProperty('--ty', Math.sin(angle) * distance + 'px');
+
+        memeDisplay.appendChild(sparkle);
+
+        setTimeout(() => sparkle.remove(), 1000);
+    }
+
+    function checkName() {
+        const savedName = localStorage.getItem('memgotchiName');
+        if (savedName) {
+            gameState.name = savedName;
+            updateNameDisplay();
+        } else {
+            document.getElementById('namePopup').style.display = 'flex';
+        }
+    }
+
+    function submitName() {
+        const nameInput = document.getElementById('nameInput').value.trim();
+        if (nameInput) {
+            gameState.name = nameInput;
+            localStorage.setItem('memgotchiName', nameInput);
+            updateNameDisplay();
+            document.getElementById('namePopup').style.display = 'none';
+        } else {
+            alert('Please enter a name!');
+        }
+    }
+
+    function updateNameDisplay() {
+        const emoji = randomMemes[0];
+        document.getElementById('memeName').textContent = `${emoji} ${gameState.name}`;
+    }
+
+    function saveGame() {
+        localStorage.setItem('memgotchiSave', JSON.stringify(gameState));
+    }
+
+    function loadGame() {
+        // Load dark mode
+        const savedDarkMode = localStorage.getItem('memgotchiDarkMode');
+        if (savedDarkMode === 'true') {
+            gameState.darkMode = true;
+            document.body.classList.add('dark-mode');
+            document.getElementById('themeToggle').textContent = '☀️';
+        }
+
+        // Load game state
+        const saved = localStorage.getItem('memgotchiSave');
+        if (saved) {
+            const loadedState = JSON.parse(saved);
+            gameState.mood = loadedState.mood || 100;
+            gameState.virality = loadedState.virality || 100;
+            gameState.cringe = loadedState.cringe || 0;
+            gameState.level = loadedState.level || 1;
+            gameState.xp = loadedState.xp || 0;
+            gameState.xpRequired = loadedState.xpRequired || 100;
+            gameState.isDead = false;
+        }
+    }
+
+    function toggleTheme() {
+        gameState.darkMode = !gameState.darkMode;
+        document.body.classList.toggle('dark-mode');
+
+        // Update toggle button
+        const toggle = document.getElementById('themeToggle');
+        toggle.textContent = gameState.darkMode ? '☀️' : '🌙';
+
+        // Play theme sound
+        playSound('theme');
+
+        // Save preference
+        localStorage.setItem('memgotchiDarkMode', gameState.darkMode);
+    }
+
+    function spawnFlyingMeme() {
+        // Clear any existing spawn timeout
+        if (memeSpawnTimeout) {
+            clearTimeout(memeSpawnTimeout);
+            memeSpawnTimeout = null;
+        }
+
+        // Don't spawn if there's already a visible meme
+        if (currentFlyingMeme && currentFlyingMeme.classList.contains('visible')) {
+            return;
+        }
+
+        // Remove old meme if exists
+        if (currentFlyingMeme) {
+            currentFlyingMeme.remove();
+            currentFlyingMeme = null;
+        }
+
+        // Create new flying meme
+        const meme = document.createElement('img');
+        meme.className = 'flying-meme';
+        meme.src = memeImages[Math.floor(Math.random() * memeImages.length)];
+
+        // Random position within viewport (avoiding edges)
+        const maxX = window.innerWidth - 300;
+        const maxY = window.innerHeight - 300;
+        const minX = 50;
+        const minY = 50;
+
+        const randomX = Math.random() * (maxX - minX) + minX;
+        const randomY = Math.random() * (maxY - minY) + minY;
+
+        meme.style.left = randomX + 'px';
+        meme.style.top = randomY + 'px';
+
+        // Click handler
+        meme.onclick = function(e) {
+            clickFlyingMeme(e, meme);
+        };
+
+        document.body.appendChild(meme);
+        currentFlyingMeme = meme;
+
+        // Fade in
+        setTimeout(() => {
+            if (meme.parentNode) {
+                meme.classList.add('visible');
+            }
+        }, 10);
+
+        // Spawn next meme after 5 seconds
+        memeSpawnTimeout = setTimeout(spawnFlyingMeme, 5000);
+    }
+
+    function clickFlyingMeme(e, memeElement) {
+        if (gameState.isDead) return;
+
+        // Prevent multiple clicks
+        if (!memeElement.classList.contains('visible')) return;
+
+        // Disable clicking immediately
+        memeElement.onclick = null;
+        memeElement.style.pointerEvents = 'none';
+
+        // Add XP
+        gameState.xp += 10;
+
+        // Play click sound
+        playSound('feed');
+
+        // Show +10 XP popup
+        showXPGain(e.clientX, e.clientY);
+
+        // Hide meme immediately
+        memeElement.classList.remove('visible');
+        currentFlyingMeme = null;
+
+        // Remove element after fade out
+        setTimeout(() => {
+            if (memeElement.parentNode) {
+                memeElement.remove();
+            }
+        }, 300);
+
+        // Check for level up
+        if (gameState.xp >= gameState.xpRequired) {
+            levelUp();
+        }
+
+        updateDisplay();
+        saveGame();
+    }
+
+    function showXPGain(x, y) {
+        const xpGain = document.createElement('div');
+        xpGain.className = 'xp-popup';
+        xpGain.textContent = '+10 XP';
+
+        xpGain.style.left = x + 'px';
+        xpGain.style.top = y + 'px';
+
+        document.body.appendChild(xpGain);
+
+        setTimeout(() => xpGain.remove(), 1000);
+    }
+
+    // Passive decay over time
+    setInterval(() => {
+        if (!gameState.isDead) {
+            gameState.mood = Math.max(0, gameState.mood - 2);
+            gameState.virality = Math.max(0, gameState.virality - 1);
+            gameState.cringe = Math.min(100, gameState.cringe + 1);
+            updateDisplay();
+            saveGame();
+
+            // Random idle messages
+            if (Math.random() < 0.3) {
+                showMessage(statusMessages.idle);
+            }
+        }
+    }, 5000);
+
+    // Allow Enter key to submit name
+    document.getElementById('nameInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            submitName();
+        }
+    });
+</script>
+</body>
+</html>
